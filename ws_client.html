@@ -1,7 +1,7 @@
 <html>
     <head>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-        <title>BOT</title>
+        <title>PYQ Spread</title>
         <style>
             body { background: black; color: lightgreen; font-family: courier; }
             .btn {width: 200px; margin-top: 3px;}
@@ -110,7 +110,9 @@
                          <span class="w120px">Limit1:</span><span  class="w150px al-left" id="limit1">0.00</span></div>
                     <div><span class="w150px">Current PL:</span><span  class="w150px al-left" id="cpl">0.00</span>
                          <span class="w120px">Limit2:</span><span  class="w150px al-left" id="limit2">0.00</span></div>
-                    <div><span class="w150px">Trading:</span><span  class="w150px al-left" id="trading_status">Status</span>
+                    <div><span class="w150px" id='symbol1_name'>Symbol1:</span><span  class="w150px al-left" id="symbol1_status">0</span>
+                         <span class="w120px">Trading:</span><span  class="w150px al-left" id="trading_status">Status</span></div>
+                    <div><span class="w150px" id='symbol2_name'>Symbol2:</span><span  class="w150px al-left" id="symbol2_status">0</span>
                          <span class="w120px">Alpaca:</span><span  class="w150px al-left" id="alpaca_status">Status</span></div>
                 </div>
                 <div id="log" class="panel nowordwrap scrollable">Log</div>

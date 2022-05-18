@@ -1,7 +1,8 @@
 const params = new Proxy(new URLSearchParams(window.location.search), {
   get: (searchParams, prop) => searchParams.get(prop),
 });
-let ws_server = params.ws_server;
+
+let ws_server = params.ws_server; 
 if (!ws_server){
 	ws_server = "localhost"
 }
@@ -27,6 +28,11 @@ const line_limit3_color='#782234'
 
 var current_limit1=1000
 var current_limit2=1
+
+var curreent_symbol1=''
+var curreent_symbol2=''
+
+var pair=''
 
 // Create our number formatter.
 var formatter = new Intl.NumberFormat('en-US', {
@@ -178,6 +184,7 @@ var zeroLine = {
 
 lineSeries.createPriceLine(zeroLine);
 
+
 var volumeSeries = chart.addHistogramSeries({
 	color: '#26a69a',
 	priceFormat: {
@@ -189,6 +196,8 @@ var volumeSeries = chart.addHistogramSeries({
 		bottom: 0,
 	},
 });
+
+lineSeries.createPriceLine(zeroLine);
 
 
 var priceLines = []
@@ -322,7 +331,11 @@ function receiveFromBot(websocket) {
 	        	}
 
 	        	if (cmd=='set_pair'){
-	        		document.getElementById('start_bot').value = event[key].val ;
+	        		pair=event[key].val
+	        		var symbols=pair.split('-')
+	        		curreent_symbol1=symbols[0]
+	        		curreent_symbol2=symbols[1]
+	        		document.getElementById('start_bot').value = pair ;
 	        	}
 	        	if (cmd=='set_limit1'){
 	        		var value=event[key].val.toFixed(0)
@@ -346,6 +359,8 @@ function receiveFromBot(websocket) {
 							    
 							});
 
+							
+
 	        	}
 	        	if (cmd=='set_limit2'){
 	        		var value=event[key].val.toFixed(0)
@@ -361,6 +376,16 @@ function receiveFromBot(websocket) {
 
 	        	if (cmd=='set_status'){
 	        		document.getElementById('status').innerHTML = event[key].val  ;
+	        	}
+
+	        	if (cmd=='set_stock_1'){
+	        		document.getElementById('symbol1_status').innerHTML = event[key].val  ;
+	        		document.getElementById('symbol1_name').innerHTML = curreent_symbol1  ;
+	        	}
+
+	        	if (cmd=='set_stock_2'){
+	        		document.getElementById('symbol2_status').innerHTML = event[key].val  ;
+	        		document.getElementById('symbol2_name').innerHTML = curreent_symbol2  ;
 	        	}
 
 	        	if (cmd=='set_stream_status'){
@@ -533,24 +558,23 @@ function receiveFromBot(websocket) {
 	        	var price2 = formatter.format(event[key].p2)
 
 	        	const quoteElement = document.createElement('div');
+            quoteElement.className = 'quote';
+            quoteElement.innerHTML = `<b>${timepart}</b> <span class='w150px'>${event[key].t1}: ${price1}</span> <span class='w150px'>${event[key].t2}: ${price2}</span> <span class='w50px n'>${span}</span>`;
+            quotesElement.appendChild(quoteElement);
 
-	            quoteElement.className = 'quote';
-	            quoteElement.innerHTML = `<b>${timepart}</b> <span class='w150px'>${event[key].t1}: ${price1}</span> <span class='w150px'>${event[key].t2}: ${price2}</span> <span class='w50px n'>${span}</span>`;
-	            quotesElement.appendChild(quoteElement);
+            var elements = document.getElementsByClassName('quote');
+            if (elements.length > 1000) {
+                quotesElement.removeChild(elements[0]);
+            }
 
-	            var elements = document.getElementsByClassName('quote');
-	            if (elements.length > 1000) {
-	                quotesElement.removeChild(elements[0]);
-	            }
+            quotesElement.scrollTop = quotesElement.scrollHeight;
 
-	            quotesElement.scrollTop = quotesElement.scrollHeight;
-
-	            infoElement.innerHTML = `${event[key].inf}`;
-	            statusElement.innerHTML = `${event[key].ps}`;
-	            buyingPowerElement.innerHTML = formatter.format(event[key].buypow);
-	            cashintradeElement.innerHTML = formatter.format(event[key].ait);
-	            plElement.innerHTML = formatter.format(event[key].PL);
-	            cplElement.innerHTML = formatter.format(event[key].CPL);
+            infoElement.innerHTML = `${event[key].inf}`;
+            statusElement.innerHTML = `${event[key].ps}`;
+            buyingPowerElement.innerHTML = formatter.format(event[key].buypow);
+            cashintradeElement.innerHTML = formatter.format(event[key].ait);
+            plElement.innerHTML = formatter.format(event[key].PL);
+            cplElement.innerHTML = formatter.format(event[key].CPL);
 
 	        	var bar = event[key];
 	            var timestamp = (new Date(bar.t).getTime() / 1000)+60*60*3;
