@@ -1,0 +1,126 @@
+body {
+  background: black;
+  color: lightgreen;
+  font-family: courier;
+}
+.btn {
+  width: 200px;
+  margin-top: 3px;
+}
+.btn-sm {
+  width: 95;
+  margin-top: 3px;
+}
+
+input {
+  margin-bottom: 3px;
+  width: 200px;
+  font-family: courier;
+  color: white;
+  background-color: darkgreen;
+}
+.wrapper {
+  display: grid;
+  grid-template-columns: 740px 2fr 1fr;
+}
+.red {
+  background-color: red;
+  color: white;
+}
+
+.active-btn {
+  background-color: orange;
+  color: white;
+}
+
+.panel {
+  width: 600;
+  height: 170;
+  font-size: 13px;
+  padding-left: 20px;
+  padding-top: 5px;
+  padding-right: 20px;
+  padding-bottom: 5px;
+  border: solid lightgreen 1px;
+}
+.panel2 {
+  padding: 20px;
+  border: solid lightgreen 1px;
+}
+.panel3 {
+  padding: 20px;
+  border: solid lightgreen 1px;
+}
+.wordwrap {
+  inline-size: 600px;
+  overflow-wrap: break-word;
+  overflow: hidden;
+}
+.nowordwrap {
+  inline-size: 600px;
+  overflow: hidden;
+}
+
+.n {
+  text-align: right;
+}
+.w150px {
+  width: 150px; /* or whatever width you want. */
+  max-width: 150px; /* or whatever width you want. */
+  display: inline-block;
+  /*border: solid lightgreen 1px;*/
+}
+.w120px {
+  width: 120px; /* or whatever width you want. */
+  max-width: 120px; /* or whatever width you want. */
+  display: inline-block;
+  /*border: solid lightgreen 1px;*/
+}
+.w100px {
+  width: 100px; /* or whatever width you want. */
+  max-width: 100px; /* or whatever width you want. */
+  display: inline-block;
+  /*border: solid lightgreen 1px;*/
+}
+
+.w70px {
+  width: 70px; /* or whatever width you want. */
+  max-width: 70px; /* or whatever width you want. */
+  display: inline-block;
+  /*border: solid lightgreen 1px;*/
+}
+
+.w50px {
+  width: 50px; /* or whatever width you want. */
+  max-width: 50px; /* or whatever width you want. */
+  display: inline-block;
+  /*border: solid lightgreen 1px;*/
+}
+
+.al-left {
+  text-align: right;
+}
+.scrollable {
+  overflow: auto;
+}
+.warn {
+  color: red;
+}
+.critical {
+  background: red;
+  color: white;
+}
+.success {
+  background: lightgreen;
+  color: black;
+}
+
+#left {
+  width: 740px;
+}
+#right {
+  float: right;
+}
+#container {
+  width: 1400px;
+}

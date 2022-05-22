@@ -1,165 +1,187 @@
 <html>
-    <head>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-        <title>PYQ Spread</title>
-        <style>
-            body { background: black; color: lightgreen; font-family: courier; }
-            .btn {width: 200px; margin-top: 3px;}
-            .btn-sm {width: 95; margin-top: 3px;}
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <title>PYQ Spread</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+  </head>
 
-            input {margin-bottom: 3px; width:  200px; font-family: courier; color: white; background-color: darkgreen; }
-            .wrapper {
-              display: grid;
-              grid-template-columns: 740px 2fr 1fr;
-            }
-            .red {background-color: red; color: white;}
-
-            .active-btn {background-color: orange; color: white;}
-
-            .panel { width: 600; height: 170; font-size: 13px; padding-left: 20px; padding-top: 5px; padding-right: 20px; padding-bottom: 5px;border: solid lightgreen 1px; }
-            .panel2 {padding: 20px; border: solid lightgreen 1px; }
-            .panel3 {padding: 20px; border: solid lightgreen 1px; }
-            .wordwrap { 
-                inline-size: 600px;
-                overflow-wrap: break-word;
-                overflow: hidden;
-            }
-            .nowordwrap {
-              inline-size: 600px; 
-              overflow: hidden;
-            }
-
-            .n {
-                text-align: right;
-            }
-            .w150px{
-                width:150px; /* or whatever width you want. */
-                max-width:150px; /* or whatever width you want. */
-                display: inline-block;
-                /*border: solid lightgreen 1px;*/
-            }
-            .w120px{
-                width:120px; /* or whatever width you want. */
-                max-width:120px; /* or whatever width you want. */
-                display: inline-block;
-                /*border: solid lightgreen 1px;*/
-            }
-            .w100px{
-                width:100px; /* or whatever width you want. */
-                max-width:100px; /* or whatever width you want. */
-                display: inline-block;
-                /*border: solid lightgreen 1px;*/
-            }
-
-            .w70px{
-                width:70px; /* or whatever width you want. */
-                max-width:70px; /* or whatever width you want. */
-                display: inline-block;
-                /*border: solid lightgreen 1px;*/
-            }
-
-            .w50px{
-                width:50px; /* or whatever width you want. */
-                max-width:50px; /* or whatever width you want. */
-                display: inline-block;
-                /*border: solid lightgreen 1px;*/
-            }
-
-            .al-left{
-                text-align:right;
-            }
-            .scrollable {
-                overflow: auto;
-
-            }
-            .warn {
-                color: red;
-            }
-            .critical {
-                background: red;
-                color: white;
-            }
-            .success {
-                background: lightgreen;
-                color: black;
-            }
-
-            #left { width: 740px; }
-            #right { float: right; }
-            #container { width: 1400px; }
-        </style>
-        <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-    </head>
-
-    <body>
-        <div class='wrapper'>
-            <div id="charts">
-                <div id="chart" class="panel2"></div>
-                <div id="chart2" class="panel2"></div>
-                <div id="chart3" class="panel2"></div>
-            </div>
-            <div id="statistics">
-                <div id="quotes" class="panel scrollable">Quotes</div>
-                <div id="trades" class="panel scrollable">Trades</div>
-                <div id="pl_pannel" class="panel2 wordwrap">
-                    <div><span class="w150px">Buying Power:</span><span  class="w150px al-left" id="buying_power">0.00</span>
-                         <span class="w120px">Equity:</span><span  class="w150px al-left" id="balance">0.00</span></div>
-                    <div><span class="w150px">Cash Intrade:</span><span  class="w150px al-left" id="cash_intrade">0.00</span>
-                         <span class="w120px">Multiplier:</span><span  class="w150px al-left" id="multiplier">0.00</span></div>
-                    <div><span class="w150px">Total PL:</span><span  class="w150px al-left" id="pl">0.00</span>
-                         <span class="w120px">Limit1:</span><span  class="w150px al-left" id="limit1">0.00</span></div>
-                    <div><span class="w150px">Current PL:</span><span  class="w150px al-left" id="cpl">0.00</span>
-                         <span class="w120px">Limit2:</span><span  class="w150px al-left" id="limit2">0.00</span></div>
-                    <div><span class="w150px" id='symbol1_name'>Symbol1:</span><span  class="w150px al-left" id="symbol1_status">0</span>
-                         <span class="w120px">Trading:</span><span  class="w150px al-left" id="trading_status">Status</span></div>
-                    <div><span class="w150px" id='symbol2_name'>Symbol2:</span><span  class="w150px al-left" id="symbol2_status">0</span>
-                         <span class="w120px">Alpaca:</span><span  class="w150px al-left" id="alpaca_status">Status</span></div>
-                </div>
-                <div id="log" class="panel nowordwrap scrollable">Log</div>
-                <div id="status" class="panel2 wordwrap ">Status</div>
-                <div id="info" class="panel2 wordwrap ">info</div> 
-            </div>
-            <div id="controls">
-                <div id="control" class="panel3">
-                    <div id='ws_server'>Server</div>
-                </div>
-                <div id="control" class="panel3">
-                    <div><label>Start Bot</label><br><input class="cmd_to_send" id="start_bot" type="text" name="item" value="SPYG-IVW"></div>
-                    <div><label>Set Limit1</label><br><input class="cmd_to_send" id="set_limit1" type="text" name="item" value="100000"></div>
-                    <div><label>Set Limit2</label><br><input class="cmd_to_send" id="set_limit2" type="text" name="item" value="1"></div>
-                    <div><label>Set Multiplier</label><br><input class="cmd_to_send" id="set_multiplier" type="text" name="item" value="1"></div>
-                    <div><label>Get Multiplier (UTC)</label><br><input class="cmd_to_send" id="get_multiplier" type="text" name="item" value="2022-05-13 13:30-14:30"></div>
-                    <div><label>Run Back Test (UTC)</label><br><input class="cmd_to_send" id="run_backtest" type="text" name="item"    value="2022-05-13 14:30-19:59"></div>
-                    <div><label>Set Backtest speed</label><br><input class="cmd_to_send" id="set_backtest_speed" type="text" name="item"    value="1000"></div>
-                </div>
-                <div id="control" class="panel3">
-                    <button class="cmd_to_send_clk btn" id="refresh_status">Refresh Status</button>
-
-                    <button class="cmd_to_send_clk btn-sm" id="enable_trading">Enable trading</button>
-                    <button class="cmd_to_send_clk btn-sm" id="enable_alpaca">Enable Alpaca</button>                    
-                    <button class="cmd_to_send_clk btn" id="stop_waiting">Waiting status</button>                    
-                    
-                    <button class="cmd_to_send_clk btn" id="open_positive">▲ Open positive ▲</button>
-                    <button class="cmd_to_send_clk btn" id="open_negative">▼ Open negative ▼</button>
-                    <button class="cmd_to_send_clk btn" id="close_possitions">✖︎ Close possitions ✖︎</button>
-
-                    <button class="cmd_to_send_clk btn" id="enable_stream">Start stream</button>
-
-                    <button class="cmd_to_send_clk btn active-btn" id="stop_backtest">Stop backtest</button>
-
-                    <button class="cmd_to_send_clk btn red" id="stop_bot">!!!STOP BOT!!!</button>
-                    <button class="cmd_to_send_clk btn green" id="start_bot2">!!!START BOT!!!</button>
-                    <button class="cmd_internal btn" id="fit_charts">Fit charts</button>
-                </div>
-                    
-            </div>  
+  <body>
+    <div class="wrapper">
+      <div id="charts">
+        <div id="chart" class="panel2"></div>
+        <div id="chart2" class="panel2"></div>
+        <div id="chart3" class="panel2"></div>
+      </div>
+      <div id="statistics">
+        <div id="quotes" class="panel scrollable">Quotes</div>
+        <div id="trades" class="panel scrollable">Trades</div>
+        <div id="pl_pannel" class="panel2 wordwrap">
+          <div>
+            <span class="w150px">Buying Power:</span>
+            <span class="w150px al-left" id="buying_power">0.00</span>
+            <span class="w120px">Equity:</span>
+            <span class="w150px al-left" id="balance">0.00</span>
+          </div>
+          <div>
+            <span class="w150px">Cash Intrade:</span>
+            <span class="w150px al-left" id="cash_intrade">0.00</span>
+            <span class="w120px">Multiplier:</span>
+            <span class="w150px al-left" id="multiplier">0.00</span>
+          </div>
+          <div>
+            <span class="w150px">Total PL:</span>
+            <span class="w150px al-left" id="pl">0.00</span>
+            <span class="w120px">Limit1:</span>
+            <span class="w150px al-left" id="limit1">0.00</span>
+          </div>
+          <div>
+            <span class="w150px">Current PL:</span>
+            <span class="w150px al-left" id="cpl">0.00</span>
+            <span class="w120px">Limit2:</span>
+            <span class="w150px al-left" id="limit2">0.00</span>
+          </div>
+          <div>
+            <span class="w150px" id="symbol1_name">Symbol1:</span>
+            <span class="w150px al-left" id="symbol1_status">0</span>
+            <span class="w120px">Trading:</span>
+            <span class="w150px al-left" id="trading_status">Status</span>
+          </div>
+          <div>
+            <span class="w150px" id="symbol2_name">Symbol2:</span>
+            <span class="w150px al-left" id="symbol2_status">0</span>
+            <span class="w120px">Alpaca:</span>
+            <span class="w150px al-left" id="alpaca_status">Status</span>
+          </div>
         </div>
-
-
-        <div id="container">
-            
+        <div id="log" class="panel nowordwrap scrollable">Log</div>
+        <div id="status" class="panel2 wordwrap">Status</div>
+        <div id="info" class="panel2 wordwrap">info</div>
+      </div>
+      <div id="controls">
+        <div id="control-name" class="panel3">
+          <div id="ws_server">Server</div>
         </div>
+        <div id="control-inputs" class="panel3">
+          <div>
+            <label>Start Bot</label>
+            <br />
+            <input
+              class="cmd_to_send"
+              id="start_bot"
+              type="text"
+              name="item"
+              value="SPYG-IVW"
+            />
+          </div>
+          <div>
+            <label>Set Limit1</label>
+            <br />
+            <input
+              class="cmd_to_send"
+              id="set_limit1"
+              type="text"
+              name="item"
+              value="100000"
+            />
+          </div>
+          <div>
+            <label>Set Limit2</label>
+            <br />
+            <input
+              class="cmd_to_send"
+              id="set_limit2"
+              type="text"
+              name="item"
+              value="1"
+            />
+          </div>
+          <div>
+            <label>Set Multiplier</label>
+            <br />
+            <input
+              class="cmd_to_send"
+              id="set_multiplier"
+              type="text"
+              name="item"
+              value="1"
+            />
+          </div>
+          <div>
+            <label>Get Multiplier (UTC)</label>
+            <br />
+            <input
+              class="cmd_to_send"
+              id="get_multiplier"
+              type="text"
+              name="item"
+              value="2022-05-13 13:30-14:30"
+            />
+          </div>
+          <div>
+            <label>Run Back Test (UTC)</label>
+            <br />
+            <input
+              class="cmd_to_send"
+              id="run_backtest"
+              type="text"
+              name="item"
+              value="2022-05-13 14:30-19:59"
+            />
+          </div>
+          <div>
+            <label>Set Backtest speed</label>
+            <br />
+            <input
+              class="cmd_to_send"
+              id="set_backtest_speed"
+              type="text"
+              name="item"
+              value="1000"
+            />
+          </div>
+        </div>
+        <div id="control-buttons" class="panel3">
+          <button class="cmd_to_send_clk btn" id="refresh_status">
+            Refresh Status
+          </button>
+          <button class="cmd_to_send_clk btn-sm" id="enable_trading">
+            Enable trading
+          </button>
+          <button class="cmd_to_send_clk btn-sm" id="enable_alpaca">
+            Enable Alpaca
+          </button>
+          <button class="cmd_to_send_clk btn" id="stop_waiting">
+            Waiting status
+          </button>
+          <button class="cmd_to_send_clk btn" id="open_positive">
+            ▲ Open positive ▲
+          </button>
+          <button class="cmd_to_send_clk btn" id="open_negative">
+            ▼ Open negative ▼
+          </button>
+          <button class="cmd_to_send_clk btn" id="close_possitions">
+            ✖︎ Close possitions ✖︎
+          </button>
+          <button class="cmd_to_send_clk btn" id="enable_stream">
+            Start stream
+          </button>
+          <button class="cmd_to_send_clk btn active-btn" id="stop_backtest">
+            Stop backtest
+          </button>
+          <button class="cmd_to_send_clk btn red" id="stop_bot">
+            !!!STOP BOT!!!
+          </button>
+          <button class="cmd_to_send_clk btn green" id="start_bot2">
+            !!!START BOT!!!
+          </button>
+          <button class="cmd_internal btn" id="fit_charts">Fit charts</button>
+        </div>
+      </div>
+    </div>
 
-        <script src="ws_client.js"></script>
-    </body>
+    <div id="container"></div>
+
+    <script src="ws_client.js"></script>
+  </body>
 </html>
