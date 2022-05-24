@@ -12,9 +12,6 @@ input {
 }
 
 .wrapper {
-  /* display: grid;
-  grid-template-columns: 740px 2fr 1fr; */
-
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -28,7 +25,6 @@ input {
 
 .charts {
   min-width: 30%;
-
   position: relative;
   padding-right: 4px;
 }

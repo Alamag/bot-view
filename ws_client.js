@@ -82,44 +82,6 @@ var chart3 = LightweightCharts.createChart(
   chartConfig(700, 150)
 );
 
-const chartsContainer = document.querySelector(".charts");
-let mousePos;
-
-const resizeChartsContainer = function (event) {
-  const dx = mousePos - event.clientX;
-  mousePos = event.clientX;
-  chartsContainer.style.width =
-    parseInt(getComputedStyle(chartsContainer).width) - dx + "px";
-};
-
-const resizeCharts = function (event) {
-  const chartsWidthInPx = parseInt(chartsContainer.style.width) - 43;
-  if (!chartsWidthInPx) {
-    return;
-  }
-  chart.resize(chartsWidthInPx, 300);
-  chart2.resize(chartsWidthInPx, 300);
-  chart3.resize(chartsWidthInPx, 150);
-};
-
-chartsContainer.addEventListener("mousedown", function (e) {
-  const borderSize = 4;
-  const containerWidth = parseInt(getComputedStyle(chartsContainer).width);
-  if (
-    e.offsetX > containerWidth - borderSize &&
-    e.offsetX < containerWidth + borderSize
-  ) {
-    mousePos = e.clientX;
-    document.addEventListener("mousemove", resizeChartsContainer);
-    document.addEventListener("mousemove", resizeCharts);
-  }
-});
-
-document.querySelector(".wrapper").addEventListener("mouseup", function () {
-  document.removeEventListener("mousemove", resizeChartsContainer);
-  document.removeEventListener("mousemove", resizeCharts);
-});
-
 const upColor = "#fc9803";
 const downColor = "#0394fc";
 
@@ -672,4 +634,56 @@ window.addEventListener("DOMContentLoaded", () => {
     chart2.timeScale().fitContent();
     chart3.timeScale().fitContent();
   });
+
+  const chartsContainer = document.querySelector(".charts");
+  let mousePos;
+
+  const resizeChartsContainer = function (event) {
+    const dx = mousePos - event.clientX;
+    mousePos = event.clientX;
+    chartsContainer.style.width =
+      parseInt(getComputedStyle(chartsContainer).width) - dx + "px";
+  };
+
+  const resizeCharts = function () {
+    const chartsWidthInPx = parseInt(getComputedStyle(chartsContainer).width);
+    if (!chartsWidthInPx) {
+      return;
+    }
+    // 43 = padding + borders
+    chart.resize(chartsWidthInPx - 43, 300);
+    chart2.resize(chartsWidthInPx - 43, 300);
+    chart3.resize(chartsWidthInPx - 43, 150);
+  };
+
+  chartsContainer.addEventListener("mousedown", function (e) {
+    const borderSize = 4;
+    const containerWidth = parseInt(getComputedStyle(chartsContainer).width);
+    if (
+      e.offsetX > containerWidth - borderSize &&
+      e.offsetX < containerWidth + borderSize
+    ) {
+      mousePos = e.clientX;
+      document.addEventListener("mousemove", resizeChartsContainer);
+      document.addEventListener("mousemove", resizeCharts);
+    }
+  });
+
+  document.addEventListener("mouseup", function () {
+    document.removeEventListener("mousemove", resizeChartsContainer);
+    document.removeEventListener("mousemove", resizeCharts);
+  });
+
+  const date = new Date();
+  const dateComponents = [
+    "" + date.getUTCFullYear(),
+    "0" + (date.getUTCMonth() + 1),
+    "0" + date.getUTCDate(),
+  ].map((component) => component.slice(-2));
+
+  const getMultiplierInput = document.querySelector("#get_multiplier");
+  getMultiplierInput.value = dateComponents.join("-") + " " + "13:30-14:30";
+
+  const backTestInput = document.querySelector("#run_backtest");
+  backTestInput.value = dateComponents.join("-") + ' ' + '14:30-19:59';
 });
