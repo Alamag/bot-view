@@ -66,6 +66,7 @@ function chartConfig(width, height) {
 
 let trades = [];
 let currentBar = {};
+
 var chart = LightweightCharts.createChart(
   document.getElementById("chart"),
   chartConfig(700, 300)
@@ -80,6 +81,18 @@ var chart3 = LightweightCharts.createChart(
   document.getElementById("chart3"),
   chartConfig(700, 150)
 );
+
+document.querySelector(".charts").addEventListener("mouseup", function () {
+  const chartsWidthInPx = parseInt(this.style.width) - 25;
+  if (!chartsWidthInPx) {
+    console.log(chartsWidthInPx);
+    return;
+  }
+  console.log(chartsWidthInPx);
+  chart.resize(chartsWidthInPx);
+  chart2.resize(chartsWidthInPx);
+  chart3.resize(chartsWidthInPx);
+});
 
 const upColor = "#fc9803";
 const downColor = "#0394fc";
@@ -618,7 +631,14 @@ window.addEventListener("DOMContentLoaded", () => {
   $(document).on("click", ".cmd_to_send_clk", function (e) {
     var newtext = "";
     var cmd = $(this).attr("id");
-    // TODO: add modal confirms by checking cmd
+
+    if (cmd == "stop_bot") {
+      const userAgree = confirm('Do you really want to stop bot?');
+      if (!userAgree) {
+        return;
+      }
+    }
+
     sendMSGToBot(cmd, newtext, websocket);
   });
   $(document).on("click", "#fit_charts", function (e) {
