@@ -16,7 +16,7 @@ input {
   grid-template-columns: 740px 2fr 1fr; */
 
   display: flex;
-  align-items:flex-start;
+  align-items: flex-start;
   justify-content: space-between;
   flex-flow: row wrap;
   min-height: 100vh;
@@ -28,8 +28,23 @@ input {
 
 .charts {
   min-width: 30%;
-  resize: horizontal;
-  overflow: auto;
+
+  position: relative;
+  padding-right: 4px;
+}
+
+.charts::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 8px;
+  height: 100%;
+  cursor: ew-resize;
+}
+
+.charts > div {
+  z-index: 1;
 }
 
 .statistics {

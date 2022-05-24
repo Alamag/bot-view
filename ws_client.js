@@ -82,16 +82,42 @@ var chart3 = LightweightCharts.createChart(
   chartConfig(700, 150)
 );
 
-document.querySelector(".charts").addEventListener("mouseup", function () {
-  const chartsWidthInPx = parseInt(this.style.width) - 25;
+const chartsContainer = document.querySelector(".charts");
+let mousePos;
+
+const resizeChartsContainer = function (event) {
+  const dx = mousePos - event.clientX;
+  mousePos = event.clientX;
+  chartsContainer.style.width =
+    parseInt(getComputedStyle(chartsContainer).width) - dx + "px";
+};
+
+const resizeCharts = function (event) {
+  const chartsWidthInPx = parseInt(chartsContainer.style.width) - 43;
   if (!chartsWidthInPx) {
-    console.log(chartsWidthInPx);
     return;
   }
-  console.log(chartsWidthInPx);
-  chart.resize(chartsWidthInPx);
-  chart2.resize(chartsWidthInPx);
-  chart3.resize(chartsWidthInPx);
+  chart.resize(chartsWidthInPx, 300);
+  chart2.resize(chartsWidthInPx, 300);
+  chart3.resize(chartsWidthInPx, 150);
+};
+
+chartsContainer.addEventListener("mousedown", function (e) {
+  const borderSize = 4;
+  const containerWidth = parseInt(getComputedStyle(chartsContainer).width);
+  if (
+    e.offsetX > containerWidth - borderSize &&
+    e.offsetX < containerWidth + borderSize
+  ) {
+    mousePos = e.clientX;
+    document.addEventListener("mousemove", resizeChartsContainer);
+    document.addEventListener("mousemove", resizeCharts);
+  }
+});
+
+document.querySelector(".wrapper").addEventListener("mouseup", function () {
+  document.removeEventListener("mousemove", resizeChartsContainer);
+  document.removeEventListener("mousemove", resizeCharts);
 });
 
 const upColor = "#fc9803";
@@ -633,7 +659,7 @@ window.addEventListener("DOMContentLoaded", () => {
     var cmd = $(this).attr("id");
 
     if (cmd == "stop_bot") {
-      const userAgree = confirm('Do you really want to stop bot?');
+      const userAgree = confirm("Do you really want to stop bot?");
       if (!userAgree) {
         return;
       }
