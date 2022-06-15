@@ -1,0 +1,174 @@
+body {
+  background: black;
+  color: lightgreen;
+  font-family: courier;
+}
+
+input {
+  margin-bottom: 3px;
+  width: 200px;
+  color: white;
+  background-color: darkgreen;
+}
+
+.wrapper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-flow: row wrap;
+  min-height: 100vh;
+}
+
+.wrapper > div {
+  margin: 0 0.5rem;
+}
+
+.charts {
+  min-width: 30%;
+  position: relative;
+  padding-right: 4px;
+}
+
+.charts::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 8px;
+  height: 100%;
+  cursor: ew-resize;
+}
+
+.charts > div {
+  z-index: 1;
+}
+
+.statistics {
+  min-width: 25%;
+}
+
+.controls {
+  max-width: 250px;
+}
+
+.btn {
+  width: 200px;
+  margin-top: 3px;
+}
+
+.btn-sm {
+  width: 95;
+  margin-top: 3px;
+}
+
+.active-btn {
+  background-color: orange;
+  color: white;
+}
+
+.panel {
+  width: 600;
+  height: 170;
+  font-size: 1rem;
+  padding: 5px 20px;
+  border: solid lightgreen 1px;
+}
+
+.panel2 {
+  padding: 20px;
+  border: solid lightgreen 1px;
+}
+
+.panel3 {
+  padding: 20px;
+  border: solid lightgreen 1px;
+}
+
+.wordwrap {
+  inline-size: 600px;
+  overflow-wrap: break-word;
+  overflow: hidden;
+}
+
+.nowordwrap {
+  inline-size: 600px;
+  overflow: hidden;
+}
+
+.n {
+  text-align: right;
+}
+
+.w150px {
+  width: 150px; /* or whatever width you want. */
+  max-width: 150px; /* or whatever width you want. */
+  display: inline-block;
+  /*border: solid lightgreen 1px;*/
+}
+
+.w120px {
+  width: 120px; /* or whatever width you want. */
+  max-width: 120px; /* or whatever width you want. */
+  display: inline-block;
+  /*border: solid lightgreen 1px;*/
+}
+
+.w100px {
+  width: 100px; /* or whatever width you want. */
+  max-width: 100px; /* or whatever width you want. */
+  display: inline-block;
+  /*border: solid lightgreen 1px;*/
+}
+
+.w70px {
+  width: 70px; /* or whatever width you want. */
+  max-width: 70px; /* or whatever width you want. */
+  display: inline-block;
+  /*border: solid lightgreen 1px;*/
+}
+
+.w50px {
+  width: 50px; /* or whatever width you want. */
+  max-width: 50px; /* or whatever width you want. */
+  display: inline-block;
+  /*border: solid lightgreen 1px;*/
+}
+
+.al-left {
+  text-align: right;
+}
+
+.scrollable {
+  overflow: auto;
+}
+
+.warn {
+  color: red;
+}
+
+.red {
+  background-color: red;
+  color: white;
+}
+
+.critical {
+  background: red;
+  color: white;
+}
+
+.success {
+  background: lightgreen;
+  color: black;
+}
+
+#left {
+  width: 740px;
+}
+
+#right {
+  float: right;
+}
+
+#container {
+  width: 1400px;
+}
