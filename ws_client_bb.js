@@ -768,7 +768,20 @@ window.addEventListener("DOMContentLoaded", () => {
   const date = new Date();
   const today=date.toISOString().split('T')[0]
 
+  const TimeRangeChangeHandler = function(newRange) {
+    if (newRange === null) {
+      // handle null
+      return;
+    }
 
+    chart1.timeScale().setVisibleLogicalRange(newRange);
+    chart2.timeScale().setVisibleLogicalRange(newRange);
+    chart3.timeScale().setVisibleLogicalRange(newRange);
+  }
+
+  chart1.timeScale().subscribeVisibleLogicalRangeChange(TimeRangeChangeHandler);
+  chart2.timeScale().subscribeVisibleLogicalRangeChange(TimeRangeChangeHandler);
+  chart3.timeScale().subscribeVisibleLogicalRangeChange(TimeRangeChangeHandler);
 
   // const backTestInput = document.querySelector("#run_backtest");
   // backTestInput.value = today + ' ' + '14:30-19:59';
