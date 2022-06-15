@@ -1,7 +1,7 @@
 <html>
   <head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <title>PYQ Spread</title>
+    <title>Bot Control</title>
     <link rel="stylesheet" href="styles.css" />
     <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   </head>
@@ -18,40 +18,47 @@
         <div id="trades" class="panel scrollable">Trades</div>
         <div id="pl_pannel" class="panel2 wordwrap">
           <div>
-            <span class="w150px">Buying Power:</span>
-            <span class="w150px al-left" id="buying_power">0.00</span>
-            <span class="w120px">Equity:</span>
+            <span class="w150px">Equity:</span>
             <span class="w150px al-left" id="balance">0.00</span>
-          </div>
-          <div>
-            <span class="w150px">Cash Intrade:</span>
-            <span class="w150px al-left" id="cash_intrade">0.00</span>
             <span class="w120px">Multiplier:</span>
             <span class="w150px al-left" id="multiplier">0.00</span>
           </div>
+
           <div>
-            <span class="w150px">Total PL:</span>
-            <span class="w150px al-left" id="pl">0.00</span>
+            <span class="w150px">Buying Power:</span>
+            <span class="w150px al-left" id="buying_power">0.00</span>
             <span class="w120px">Limit1:</span>
             <span class="w150px al-left" id="limit1">0.00</span>
           </div>
           <div>
-            <span class="w150px">Current PL:</span>
-            <span class="w150px al-left" id="cpl">0.00</span>
+            <span class="w150px">Cash Intrade:</span>
+            <span class="w150px al-left" id="cash_intrade">0.00</span>
             <span class="w120px">Limit2:</span>
             <span class="w150px al-left" id="limit2">0.00</span>
           </div>
           <div>
-            <span class="w150px" id="symbol1_name">Symbol1:</span>
-            <span class="w150px al-left" id="symbol1_status">0</span>
+            <span class="w150px">Total PL:</span>
+            <span class="w150px al-left" id="pl">0.00</span>
             <span class="w120px">Trading:</span>
             <span class="w150px al-left" id="trading_status">Status</span>
           </div>
           <div>
-            <span class="w150px" id="symbol2_name">Symbol2:</span>
-            <span class="w150px al-left" id="symbol2_status">0</span>
+            <span class="w150px">Current PL:</span>
+            <span class="w150px al-left" id="cpl">0.00</span>
             <span class="w120px">Alpaca:</span>
             <span class="w150px al-left" id="alpaca_status">Status</span>
+          </div>
+          <div>
+            <span class="w150px" id="symbol1_name">Symbol1:</span>
+            <span class="w150px al-left" id="symbol1_status">0</span>
+            <span class="w120px">Algo:</span>
+            <span class="w150px al-left" id="algo_status">Status</span>
+          </div>
+          <div>
+            <span class="w150px" id="symbol2_name">Symbol2:</span>
+            <span class="w150px al-left" id="symbol2_status">0</span>
+            <span class="w120px">Idle:</span>
+            <span class="w150px al-left" id="idle_status">Status</span>
           </div>
         </div>
         <div id="log" class="panel nowordwrap scrollable">Log</div>
@@ -72,6 +79,28 @@
               type="text"
               name="item"
               value="SPYG-IVW"
+            />
+          </div>
+          <div>
+            <label>Set Max Tading Level</label>
+            <br />
+            <input
+              class="cmd_to_send"
+              id="set_max_trading_level"
+              type="text"
+              name="item"
+              value="1"
+            />
+          </div>
+          <div>
+            <label>Set Lot Amount</label>
+            <br />
+            <input
+              class="cmd_to_send"
+              id="set_lot_size"
+              type="text"
+              name="item"
+              value="90000"
             />
           </div>
           <div>
@@ -118,7 +147,7 @@
               value="2022-05-13 13:30-14:30"
             />
           </div>
-          <div>
+<!--           <div>
             <label>Run Back Test (UTC)</label>
             <br />
             <input
@@ -128,8 +157,8 @@
               name="item"
               value="2022-05-13 14:30-19:59"
             />
-          </div>
-          <div>
+          </div> -->
+          <!-- <div>
             <label>Set Backtest speed</label>
             <br />
             <input
@@ -139,11 +168,25 @@
               name="item"
               value="1000"
             />
+          </div> -->
+        <div>
+            <label>Close at (LocalTime)</label>
+            <br />
+            <input
+              class="cmd_to_send"
+              id="set_close_at"
+              type="text"
+              name="item"
+              value="19:58"
+            />
           </div>
         </div>
         <div id="control-buttons" class="panel3">
           <button class="cmd_to_send_clk btn" id="refresh_status">
             Refresh Status
+          </button>
+          <button class="cmd_to_send_clk btn" id="enable_algo">
+            Enable Algo
           </button>
           <button class="cmd_to_send_clk btn-sm" id="enable_trading">
             Enable trading
@@ -154,28 +197,38 @@
           <button class="cmd_to_send_clk btn" id="stop_waiting">
             Waiting status
           </button>
-          <button class="cmd_to_send_clk btn" id="open_positive">
-            ▲ Open positive ▲
+          <button class="cmd_to_send_clk btn-sm" id="open_positive">
+            ▲ Open positive
           </button>
-          <button class="cmd_to_send_clk btn" id="open_negative">
-            ▼ Open negative ▼
+          <button class="cmd_to_send_clk btn-sm" id="close_positive">
+            ✖︎▲ Close positive
+          </button>
+          <button class="cmd_to_send_clk btn-sm" id="open_negative">
+            ▼ Open negative
+          </button>
+          <button class="cmd_to_send_clk btn-sm" id="close_negative">
+            ✖︎▼ Close negative
           </button>
           <button class="cmd_to_send_clk btn" id="close_possitions">
             ✖︎ Close possitions ✖︎
           </button>
+          <button class="cmd_to_send_clk btn" id="reset_pl">
+            ✖︎ Reset PL ✖︎
+          </button>
           <button class="cmd_to_send_clk btn" id="enable_stream">
             Start stream
           </button>
-          <button class="cmd_to_send_clk btn active-btn" id="stop_backtest">
+<!--           <button class="cmd_to_send_clk btn active-btn" id="stop_backtest">
             Stop backtest
-          </button>
+          </button> -->
           <button class="cmd_to_send_clk btn red" id="stop_bot">
-            !!!STOP BOT!!!
+            !!! KILL BOT !!!
           </button>
-          <button class="cmd_to_send_clk btn green" id="start_bot2">
+<!--           <button class="cmd_to_send_clk btn green" id="start_bot2">
             !!!START BOT!!!
-          </button>
+          </button> -->
           <button class="cmd_internal btn" id="fit_charts">Fit charts</button>
+          <button class="cmd_internal btn" id="reset_charts">Reset charts</button>
         </div>
       </div>
     </div>

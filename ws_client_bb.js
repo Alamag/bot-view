@@ -9,19 +9,71 @@ if (!ws_server) {
 
 let ws_port = parseInt(params.ws_port);
 if (!ws_port) {
-  ws_port = 5051;
+  ws_port = 5151;
 }
 
-document.getElementById("ws_server").innerHTML = ws_server;
+document.getElementById("ws_server").innerHTML = ws_server+":"+ws_port;
 
-var current_limit1 = 1000;
-var current_limit2 = 1;
-var current_lot_size = 90000;
 
-var current_symbol1 = "";
-var current_symbol2 = "";
+var current_price = 1.0;
+var current_top = 1.0;
+var current_middle = 1.0;
+var current_bottom = 1.0;
+var current_lot_volume = 90000;
+var current_symbol = "";
+var symbol = "";
 
-var pair = "";
+var rsi_lim=70
+var stoch_lim=80
+const audio = new Audio("sounds/bell.mp3");
+
+const command_list = [
+  "set_sma_period",
+  "set_std_factor", 
+  "set_take_profit", 
+  "set_stop_loss",
+  "set_stop_loss_prc",
+  "set_reopen_loss_prc",
+  "set_take_max_pl_prc",
+  "set_stoch_lim",
+  "set_stoch_period",
+  "set_stoch_sma",
+  "set_rsi_lim",
+  "set_rsi_period",
+  "set_max_signal_count",
+  "set_lot_volume",
+  "set_close_at",
+  "set_max_signal_count",
+];
+
+const command_list_val = [
+  'set_set_status',
+  'set_symbol_status',
+  'set_symbol_name',
+  'set_symbol',
+  'set_stock'
+];
+
+const command_list_val_fmt = [
+  'set_pl',
+  'set_cpl',
+  'set_ait',
+  'set_buypow',
+  'set_equity',
+  'set_buying_power'
+];
+
+const button_list = [
+  'set_stream_status',
+  'set_algo_status',
+  'set_trading_status',
+  'set_alpaca_status',
+  'set_waiting_status',
+  'set_bb_status',
+  'set_rsi_status',
+  'set_stoch_status',
+];
+
 
 // Create our number formatter.
 var formatter = new Intl.NumberFormat("en-US", {
@@ -68,14 +120,15 @@ function chartConfig(width, height) {
 let trades = [];
 let currentBar = {};
 
-var chart = LightweightCharts.createChart(
-  document.getElementById("chart"),
+
+var chart1 = LightweightCharts.createChart(
+  document.getElementById("chart1"),
   chartConfig(700, 300)
 );
 
 var chart2 = LightweightCharts.createChart(
   document.getElementById("chart2"),
-  chartConfig(700, 500)
+  chartConfig(700, 300)
 );
 
 var chart3 = LightweightCharts.createChart(
@@ -86,37 +139,81 @@ var chart3 = LightweightCharts.createChart(
 const upColor = "#fc9803";
 const downColor = "#0394fc";
 
-var candleSeries = chart.addCandlestickSeries({
-  upColor: upColor,
-  borderUpColor: upColor,
-  wickUpColor: upColor,
-  downColor: downColor,
-  borderDownColor: downColor,
-  wickDownColor: downColor,
+
+
+var lineSeries_top = chart1.addLineSeries({
+  color: "rgba(90, 90, 90, 1)",
+  lineWidth: 2,
 });
 
-var volumeSeries = chart.addHistogramSeries({
-  color: "#26a69a",
-  priceFormat: {
-    type: "volume",
-  },
-  priceScaleId: "",
-  scaleMargins: {
-    top: 0.8,
-    bottom: 0,
-  },
+var lineSeries_middle = chart1.addLineSeries({
+  color: "rgba(50, 50, 50, 1)",
+  lineWidth: 2,
 });
 
-var lineSeries = chart2.addLineSeries({
+var lineSeries_bottom = chart1.addLineSeries({
+  color: "rgba(90, 90, 90, 1)",
+  lineWidth: 2,
+});
+
+
+var lineSeries = chart1.addLineSeries({
   color: "rgba(4, 111, 232, 1)",
   lineWidth: 2,
 });
 
+
+var lineSeries_rsi = chart2.addLineSeries({
+  autoscaleInfoProvider: () => ({
+    priceRange: {
+      minValue: 0,
+      maxValue: 100,
+    },
+    margins: {
+      above: 2,
+      below: 2,
+    },
+  }),
+  color: "rgba(0, 180, 0, 1)",
+  lineWidth: 2,
+});
+
+var lineSeries_fast = chart2.addLineSeries({
+  autoscaleInfoProvider: () => ({
+    priceRange: {
+      minValue: 0,
+      maxValue: 100,
+    },
+    margins: {
+      above: 2,
+      below: 2,
+    },
+  }),
+  color: "rgba(0, 80, 180, 1)",
+  lineWidth: 2,
+});
+
+var lineSeries_slow = chart2.addLineSeries({
+  autoscaleInfoProvider: () => ({
+    priceRange: {
+      minValue: 0,
+      maxValue: 100,
+    },
+    margins: {
+      above: 2,
+      below: 2,
+    },
+  }),
+  color: "rgba(0, 111, 232, 1)",
+  lineWidth: 2,
+});
+
+
 var areaSeries = chart3.addAreaSeries({
   autoscaleInfoProvider: () => ({
     priceRange: {
-      minValue: -2000,
-      maxValue: 5000,
+      minValue: -5,
+      maxValue: 10,
     },
     margins: {
       above: 2,
@@ -129,18 +226,6 @@ var areaSeries = chart3.addAreaSeries({
   lineWidth: 2,
 });
 
-var zeroLine = {
-  price: 0,
-  color: "#ffffff",
-  lineWidth: 2,
-  lineStyle: LightweightCharts.LineStyle.Solid,
-  axisLabelVisible: true,
-  title: "",
-};
-
-lineSeries.createPriceLine(zeroLine);
-
-lineSeries.createPriceLine(zeroLine);
 
 var priceLines = [];
 var tick_count = 0;
@@ -156,52 +241,56 @@ function lineConfig(price, color, title = "") {
   };
 }
 
-function redrawLines() {
-  const line_limit1_color = "#be1238";
-  const line_limit2_color = "#CAA40C";
-  const line_limit3_color = "#782234";
 
+
+function remove_lines(){
   priceLines.forEach((object) => {
-    lineSeries.removePriceLine(object);
+    lineSeries_rsi.removePriceLine(object);
   });
+}
 
-  var theLine = lineConfig(current_limit1, line_limit1_color);
-  var priceLine = lineSeries.createPriceLine(theLine);
+function draw_lines(){
+  remove_lines()
+
+  var theLine = lineConfig(rsi_lim,"#aaaa00","");
+  let priceLine = lineSeries_rsi.createPriceLine(theLine);
   priceLines.push(priceLine);
 
-  var theLine = lineConfig(-current_limit1, line_limit1_color);
-  priceLine = lineSeries.createPriceLine(theLine);
+  var theLine = lineConfig(100-rsi_lim,"#aaaa00","");
+  priceLine = lineSeries_rsi.createPriceLine(theLine);
   priceLines.push(priceLine);
 
-  var theLine = lineConfig(current_limit2, line_limit2_color);
-  priceLine = lineSeries.createPriceLine(theLine);
+  var theLine = lineConfig(stoch_lim,"#aa0000","");
+  priceLine = lineSeries_rsi.createPriceLine(theLine);
   priceLines.push(priceLine);
 
-  var theLine = lineConfig(-current_limit2, line_limit2_color);
-  priceLine = lineSeries.createPriceLine(theLine);
+  var theLine = lineConfig(100-stoch_lim,"#aa0000","");
+  priceLine = lineSeries_rsi.createPriceLine(theLine);
   priceLines.push(priceLine);
 
-  var theLine = lineConfig(current_limit1 * 2, line_limit3_color);
-  priceLine = lineSeries.createPriceLine(theLine);
-  priceLines.push(priceLine);
+  // lineSeries_rsi.createPriceLine(rsiTopLine);
+  // lineSeries_rsi.createPriceLine(rsiBottomLine);
 
-  var theLine = lineConfig(-current_limit1 * 2, line_limit3_color);
-  priceLine = lineSeries.createPriceLine(theLine);
-  priceLines.push(priceLine);
+  // lineSeries_fast.createPriceLine(stochasticTopLine);
+  // lineSeries_fast.createPriceLine(stochasticBottomLine);
 }
 
 function reset_charts(){
   lineSeries.setData([]);
+  lineSeries_top.setData([]);
+  lineSeries_middle.setData([]);
+  lineSeries_bottom.setData([]);
+  lineSeries_rsi.setData([]);
+  lineSeries_fast.setData([]);
+  lineSeries_slow.setData([]);
   areaSeries.setData([]);
-  candleSeries.setData([]);
-  volumeSeries.setData([]);
 
-  const tradesElement = document.getElementById("trades");
-  tradesElement.innerHTML = "";
+  document.getElementById("trades").innerHTML = "";
+  document.getElementById("quotes").innerHTML = "";
 
   trades = [];
-  candleSeries.setMarkers(trades);
   lineSeries.setMarkers(trades);
+  lineSeries_rsi.setMarkers(trades);
   areaSeries.setMarkers(trades);
 
   priceLines.forEach((object) => {
@@ -220,7 +309,7 @@ function receiveFromBot(websocket) {
       //// Settings or commands////
       if (type == "s") {
         // console.log('got a cmd');
-        console.log(event[key]);
+        // console.log(event[key]);
         var cmd = event[key].cmd;
         if (cmd == "refresh") {
           window.location.reload();
@@ -236,206 +325,78 @@ function receiveFromBot(websocket) {
         }
 
         if (cmd == "remove_lines") {
-          priceLines.forEach((object) => {
-            lineSeries.removePriceLine(object);
-          });
+          remove_lines()
         }
 
         if (cmd == "reset_charts") {
           reset_charts()
         }
 
-        if (cmd == "set_cash") {
-          const buyingPowerElement = document.getElementById("buying_power");
-          buyingPowerElement.innerHTML = formatter.format(event[key].p);
-        }
-        if (cmd == "set_balance") {
-          document.getElementById("balance").innerHTML = formatter.format(
-            event[key].val
-          );
+
+
+        if (cmd == "set_signals_count") {
+          document.getElementById("signals_count").innerHTML = event[key].val;
         }
 
-        if (cmd == "set_pair") {
-          pair = event[key].val;
-          var symbols = pair.split("-");
-          current_symbol1 = symbols[0];
+        if (cmd == "set_symbol") {
+          symbol = event[key].val;
+          var symbols = symbol.split("-");
+          current_symbol = symbols[0];
           current_symbol2 = symbols[1];
-          document.getElementById("start_bot").value = pair;
-          document.title=pair;
+          document.getElementById("set_symbol").value = symbol;
+          document.title=symbol;
         }
-        if (cmd == "set_limit1") {
+
+        // commands to set input fileds
+        if (command_list.includes(cmd)){
+          document.getElementById(cmd).value = event[key].val;
+        }
+
+        if (cmd == "set_rsi_lim") {
+          rsi_lim=event[key].val
+          draw_lines()
+        }
+        if (cmd == "set_stoch_lim") {
+          stoch_lim=event[key].val
+          draw_lines()
+        }
+        // commands to set plain values
+        if (command_list_val.includes(cmd)){
+          component_id=cmd.split("set_")[1]
+          console.log("plain component_id:"+component_id+", val="+event[key].val);
+          document.getElementById(component_id).innerHTML = event[key].val;
+        }
+
+        // commands to set formatted values
+        if (command_list_val_fmt.includes(cmd)){
+          component_id=cmd.split("set_")[1]
+          console.log("fmt component_id:"+component_id+", val="+formatter.format(event[key].val));
+          document.getElementById(component_id).innerHTML = formatter.format(event[key].val);
+        }
+
+        // commands to set buttin status
+        
+        if (button_list.includes(cmd)){
+          component_id1=cmd.split("set_")[1];
+          component_id=component_id1.split("_")[0];
           var value = event[key].val;
-          document.getElementById("limit1").innerHTML = value;
-          document.getElementById("set_limit1").value = value;
-          current_limit1 = value;
-
-          redrawLines();
-
-          lineSeries.applyOptions({
-            autoscaleInfoProvider: () => ({
-              priceRange: {
-                minValue: -value,
-                maxValue: value,
-              },
-              margins: {
-                above: 110,
-                below: 120,
-              },
-            }),
-          });
-        }
-        if (cmd == "set_limit2") {
-          var value = event[key].val;
-          document.getElementById("limit2").innerHTML = value;
-          document.getElementById("set_limit2").value = value;
-          current_limit2 = value;
-          redrawLines();
-        }
-        if (cmd == "set_lot_size") {
-          var value = event[key].val;
-          document.getElementById("set_lot_size").value = value;
-          current_lot_size = value;
-        }
-        if (cmd == "set_max_trading_level") {
-          var value = event[key].val;
-          document.getElementById("set_max_trading_level").value = value;
-        }
-        if (cmd == "set_close_at") {
-          var value = event[key].val;
-          document.getElementById("set_close_at").value = value;
-          current_lot_size = value;
-          redrawLines();
-        }
-        if (cmd == "set_multiplier") {
-          document.getElementById("multiplier").innerHTML =
-            event[key].val;
-          document.getElementById("set_multiplier").value =
-            event[key].val;
-        }
-
-        if (cmd == "set_status") {
-          document.getElementById("status").innerHTML = event[key].val;
-        }
-
-
-
-        if (cmd == "set_pl") {
-          document.getElementById("pl").innerHTML = formatter.format(event[key].val);
-        }
-
-        if (cmd == "set_cpl") {
-          document.getElementById("cpl").innerHTML = formatter.format(event[key].val);
-        }
-        if (cmd == "set_ait") {
-          document.getElementById("cash_intrade").innerHTML = formatter.format(event[key].val);
-        }
-        if (cmd == "set_buypow") {
-          document.getElementById("buying_power").innerHTML = formatter.format(event[key].val);
-        }
-        if (cmd == "set_balt") {
-          document.getElementById("balance").innerHTML = formatter.format(event[key].val);
-        }
-
-        if (cmd == "set_stock_1") {
-          document.getElementById("symbol1_status").innerHTML = event[key].val;
-          document.getElementById("symbol1_name").innerHTML = current_symbol1;
-        }
-
-        if (cmd == "set_stock_2") {
-          document.getElementById("symbol2_status").innerHTML = event[key].val;
-          document.getElementById("symbol2_name").innerHTML = current_symbol2;
-        }
-
-        if (cmd == "set_stream_status") {
-          var value = event[key].val;
-          // document.getElementById('stream_status').innerHTML = value;
+          console.log("button component_id:"+component_id+", val="+value);
           if (value == true) {
-            var sream_btn = document.getElementById("enable_stream");
-            if (sream_btn) {
-              sream_btn.innerText = "Disable Stream";
-              sream_btn.className += " active-btn";
-              sream_btn.id = "disable_stream";
+            var component_btn = document.getElementById("enable_"+component_id);
+            if (component_btn) {
+              component_btn.innerText = "Disable "+component_id;
+              component_btn.className += " active-btn";
+              component_btn.id = "disable_"+component_id;
             }
           } else {
-            var sream_btn = document.getElementById("disable_stream");
-            if (sream_btn) {
-              sream_btn.innerText = "Enable Stream";
-              sream_btn.className = sream_btn.className.replace(
+            var component_btn = document.getElementById("disable_"+component_id);
+            if (component_btn) {
+              component_btn.innerText = "Enable "+component_id;
+              component_btn.className = component_btn.className.replace(
                 /(?:^|\s)active-btn(?!\S)/g,
                 ""
               );
-              sream_btn.id = "enable_stream";
-            }
-          }
-        }
-
-        if (cmd == "set_algo_status") {
-          var value = event[key].val;
-          document.getElementById("algo_status").innerHTML = value;
-          if (value == true) {
-            var algo_btn = document.getElementById("enable_algo");
-            if (algo_btn) {
-              algo_btn.innerText = "Disable algo";
-              algo_btn.className += " active-btn";
-              algo_btn.id = "disable_algo";
-            }
-          } else {
-            var algo_btn = document.getElementById("disable_algo");
-            if (algo_btn) {
-              algo_btn.innerText = "Enable algo";
-              algo_btn.className = algo_btn.className.replace(
-                /(?:^|\s)active-btn(?!\S)/g,
-                ""
-              );
-
-              algo_btn.id = "enable_algo";
-            }
-          }
-        }
-
-        if (cmd == "set_trading_status") {
-          var value = event[key].val;
-          document.getElementById("trading_status").innerHTML = value;
-          if (value == true) {
-            var trading_btn = document.getElementById("enable_trading");
-            if (trading_btn) {
-              trading_btn.innerText = "Disable Trading";
-              trading_btn.className += " active-btn";
-              trading_btn.id = "disable_trading";
-            }
-          } else {
-            var trading_btn = document.getElementById("disable_trading");
-            if (trading_btn) {
-              trading_btn.innerText = "Enable Trading";
-              trading_btn.className = trading_btn.className.replace(
-                /(?:^|\s)active-btn(?!\S)/g,
-                ""
-              );
-
-              trading_btn.id = "enable_trading";
-            }
-          }
-        }
-
-        if (cmd == "set_alpaca_status") {
-          var value = event[key].val;
-          document.getElementById("alpaca_status").innerHTML = value;
-          if (value == true) {
-            var alpaca_btn = document.getElementById("enable_alpaca");
-            if (alpaca_btn) {
-              alpaca_btn.innerText = "Disable Alpaca";
-              alpaca_btn.className += " active-btn";
-              alpaca_btn.id = "disable_alpaca";
-            }
-          } else {
-            var alpaca_btn = document.getElementById("disable_alpaca");
-            if (alpaca_btn) {
-              alpaca_btn.innerText = "Enable Alpaca";
-              alpaca_btn.className = alpaca_btn.className.replace(
-                /(?:^|\s)active-btn(?!\S)/g,
-                ""
-              );
-              alpaca_btn.id = "enable_alpaca";
+              component_btn.id = "enable_"+component_id;
             }
           }
         }
@@ -447,7 +408,7 @@ function receiveFromBot(websocket) {
 
       //// Trades ////
       if (type == "t") {
-        const audio = new Audio("sounds/bell.mp3");
+        
         audio.play();
 
         var timepart = event[key].t.split(" ")[1];
@@ -455,6 +416,7 @@ function receiveFromBot(websocket) {
         // console.log(event[key]);
         // var value = Math.round((event[key].limit_price + Number.EPSILON) * 100) / 100;
         var value = formatter.format(event[key].limit_price);
+        var amount = formatter.format(event[key].limit_price*event[key].qty);
 
         var act = event[key].side;
         const tradeElement = document.createElement("div");
@@ -464,8 +426,8 @@ function receiveFromBot(websocket) {
           <span class='w50px'>${act}</span>
           <span class='w50px'>${event[key].symbol}</span>
           <span class='w70px n'>${value}</span>
-          <span class='w50px n'>${event[key].qty}</span>
-          <span class='w50px n'>${event[key].spd}</span>
+          <span class='w70px n'>${event[key].qty}</span>
+          <span class='w150px n'>${amount}</span>
         `;
 
         const tradesElement = document.getElementById("trades");
@@ -480,7 +442,7 @@ function receiveFromBot(websocket) {
         // var timestamp = new Date(event[key].t).getTime() / 1000;
         var timestamp = new Date(event[key].t).getTime() / 1000 + 60 * 60 * 3;
 
-        if (event[key].symbol==current_symbol1){
+        if (event[key].symbol==current_symbol){
           if (act == "sell" || act == "short") {
             markers = {
               time: timestamp,
@@ -502,8 +464,9 @@ function receiveFromBot(websocket) {
           }
 
           trades.push(markers);
-          candleSeries.setMarkers(trades);
+          // candleSeries.setMarkers(trades);
           lineSeries.setMarkers(trades);
+          lineSeries_rsi.setMarkers(trades);
           areaSeries.setMarkers(trades);
 
         }
@@ -555,17 +518,46 @@ function receiveFromBot(websocket) {
         var timepart = event[key].t.split(" ")[1];
         // console.log(event[key]);
         // var price1=Math.round((event[key].p1 + Number.EPSILON) * 100) / 100;
-        var span = Math.round(event[key].spd);
-        var price1 = formatter.format(event[key].p1);
-        var price2 = formatter.format(event[key].p2);
+        var top = event[key].top;
+        var price = event[key].price;
+        var middle = event[key].middle;
+        var bottom = event[key].bottom;
+        var bottom = event[key].bottom;
+        var rsi = event[key].rsi;
+        var fast = event[key].fast;
+        var slow = event[key].slow;
+        var vlt = event[key].vlt;
+        var current_price = formatter.format(event[key].price);
 
         const quoteElement = document.createElement("div");
         quoteElement.className = "quote";
+
+        top_class=''
+        bottom_class=''
+        rsi_class=''
+        fast_class=''
+        slow_class=''
+        vlt_class=''
+
+        if (price>top) {top_class='warn'}
+        if (price<bottom) {bottom_class='warn'}
+        if (rsi<100-rsi_lim || rsi>rsi_lim) {rsi_class='warn'}
+        if (fast<100-stoch_lim || fast>stoch_lim) {fast_class='warn'}
+        if (slow<100-stoch_lim || slow>stoch_lim) {slow_class='warn'}
+
+        row_class=event[key].signal;
+
         quoteElement.innerHTML = `
+          <span class='${row_class}'>
           <b>${timepart}</b> 
-          <span class='w150px'>${event[key].t1}: ${price1}</span> 
-          <span class='w150px'>${event[key].t2}: ${price2}</span> 
-          <span class='w50px n'>${span}</span>
+          <span class='w100px'>${event[key].symbol}: ${current_price}</span> 
+          <span class='w70px ${vlt_class} n'>${vlt}</span> 
+          <span class='w70px ${top_class} n'>${top}</span> 
+          <span class='w70px ${bottom_class} n'>${bottom}</span>
+          <span class='w50px ${rsi_class} n'>${rsi}</span>
+          <span class='w50px ${fast_class} n'>${fast}</span>
+          <span class='w50px ${slow_class} n'>${slow}</span>
+          </span>
         `;
 
         const quotesElement = document.getElementById("quotes");
@@ -578,19 +570,14 @@ function receiveFromBot(websocket) {
 
         quotesElement.scrollTop = quotesElement.scrollHeight;
 
-        const infoElement = document.getElementById("info");
-        const statusElement = document.getElementById("status");
-        const buyingPowerElement = document.getElementById("buying_power");
-        const cashintradeElement = document.getElementById("cash_intrade");
-        const plElement = document.getElementById("pl");
-        const cplElement = document.getElementById("cpl");
-
-        infoElement.innerHTML = `${event[key].inf}`;
-        statusElement.innerHTML = `${event[key].ps}`;
-        buyingPowerElement.innerHTML = formatter.format(event[key].buypow);
-        cashintradeElement.innerHTML = formatter.format(event[key].ait);
-        plElement.innerHTML = formatter.format(event[key].PL);
-        cplElement.innerHTML = formatter.format(event[key].CPL);
+        document.getElementById("info").innerHTML = `${event[key].inf}`;
+        document.getElementById("status").innerHTML = `${event[key].ps}`;
+        document.getElementById("buying_power").innerHTML = formatter.format(event[key].buypow);
+        document.getElementById("ait").innerHTML = formatter.format(event[key].ait);
+        document.getElementById("cpl").innerHTML = formatter.format(event[key].CPL);
+        document.getElementById("pl_prc").innerHTML = "% "+event[key].pl_prc;
+        document.getElementById("pl_prc_sh").innerHTML = "% "+event[key].pl_prc_sh;
+        document.getElementById("pl_prc_cur").innerHTML = "% "+event[key].pl_prc_cur;
 
         var bar = event[key];
         var timestamp = new Date(bar.t).getTime() / 1000 + 60 * 60 * 3;
@@ -604,11 +591,35 @@ function receiveFromBot(websocket) {
         var spread = event[key].spd;
         currentTick = {
           time: timestamp,
-          value: spread,
+          value: price,
+        };
+        currentTick_top = {
+          time: timestamp,
+          value: top,
+        };
+        currentTick_middle = {
+          time: timestamp,
+          value: middle,
+        };
+        currentTick_bottom = {
+          time: timestamp,
+          value: bottom,
+        };
+        currentTick_rsi = {
+          time: timestamp,
+          value: event[key].rsi,
+        };
+        currentTick_fast = {
+          time: timestamp,
+          value: event[key].fast,
+        };
+        currentTick_slow = {
+          time: timestamp,
+          value: event[key].slow,
         };
         currentPL = {
           time: timestamp,
-          value: event[key].PL,
+          value: event[key].pl_prc,
         };
         if (spread >= 0) {
           color = "rgba(0, 150, 136, 0.8)";
@@ -622,9 +633,15 @@ function receiveFromBot(websocket) {
         };
 
         lineSeries.update(currentTick);
+        lineSeries_top.update(currentTick_top);
+        lineSeries_middle.update(currentTick_middle);
+        lineSeries_bottom.update(currentTick_bottom);
+        lineSeries_rsi.update(currentTick_rsi);
+        lineSeries_fast.update(currentTick_fast);
+        lineSeries_slow.update(currentTick_slow);
         areaSeries.update(currentPL);
-        candleSeries.update(currentBar);
-        volumeSeries.update(volume);
+        // candleSeries.update(currentBar);
+        // volumeSeries.update(volume);
 
         tick_count++;
       }
@@ -700,13 +717,14 @@ window.addEventListener("DOMContentLoaded", () => {
     sendMSGToBot(cmd, newtext, websocket);
   });
   $(document).on("click", "#fit_charts", function (e) {
-    chart.timeScale().fitContent();
+    chart1.timeScale().fitContent();
     chart2.timeScale().fitContent();
     chart3.timeScale().fitContent();
   });
   $(document).on("click", "#reset_charts", function (e) {
     reset_charts()
   });
+
 
   const chartsContainer = document.querySelector(".charts");
   let mousePos;
@@ -724,7 +742,7 @@ window.addEventListener("DOMContentLoaded", () => {
       return;
     }
     // 43 = padding + borders
-    chart.resize(chartsWidthInPx - 43, 300);
+    chart1.resize(chartsWidthInPx - 43, 300);
     chart2.resize(chartsWidthInPx - 43, 300);
     chart3.resize(chartsWidthInPx - 43, 150);
   };
@@ -750,8 +768,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const date = new Date();
   const today=date.toISOString().split('T')[0]
 
-  const getMultiplierInput = document.querySelector("#get_multiplier");
-  getMultiplierInput.value = today + " " + "13:30-14:30";
+
 
   // const backTestInput = document.querySelector("#run_backtest");
   // backTestInput.value = today + ' ' + '14:30-19:59';
