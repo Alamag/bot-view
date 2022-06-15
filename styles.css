@@ -9,6 +9,7 @@ input {
   width: 200px;
   color: white;
   background-color: darkgreen;
+  font-family: courier;
 }
 
 .wrapper {
@@ -84,6 +85,9 @@ input {
   border: solid lightgreen 1px;
 }
 
+.text-sm{
+  font-size: 0.8rem;
+}
 .wordwrap {
   inline-size: 600px;
   overflow-wrap: break-word;
@@ -153,6 +157,16 @@ input {
 
 .critical {
   background: red;
+  color: white;
+}
+
+.buy {
+  background: #005500;
+  color: white;
+}
+
+.sell {
+  background: #550000;
   color: white;
 }
 
